@@ -394,16 +394,19 @@ class _DocumentScannerViewState extends State<DocumentScannerView> {
                       alignment: Alignment.centerLeft,
                       child: Text('Images [0]:')),
                 ),
-                SizedBox(
-                  height: 400,
-                  child: Image.file(File(_result!.images.first)),
-                ),
-                SizedBox(height: 20,),
-                _buildTextField('Name', _nameController),
-                _buildTextField('Cnic', _identityNumberController),
-                _buildTextField('DOB', _dobController),
-                _buildTextField('Date of Issue', _issueDateController),
-                _buildTextField('Date of Expiry', _expiryDateController),
+                if (_result?.images.isNotEmpty == true )...[
+                  SizedBox(
+                    height: 400,
+                    child: Image.file(File(_result!.images.first)),
+                  ),
+                  SizedBox(height: 20,),
+                  _buildTextField('Name', _nameController),
+                  _buildTextField('Cnic', _identityNumberController),
+                  _buildTextField('DOB', _dobController),
+                  _buildTextField('Date of Issue', _issueDateController),
+                  _buildTextField('Date of Expiry', _expiryDateController),
+                ]
+
               ],
           ),
         ),
