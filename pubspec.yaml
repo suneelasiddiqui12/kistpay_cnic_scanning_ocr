@@ -47,6 +47,8 @@ dependencies:
   permission_handler: ^10.0.0
   edge_detection:
   google_ml_kit:
+  flutter_face_api: ^6.1.1
+  flutter_face_core_basic: ^6.1.0
   fluttertoast:
   intl:
 dev_dependencies:
@@ -72,9 +74,8 @@ flutter:
   uses-material-design: true
 
   # To add assets to your application, add an assets section, like this:
-  # assets:
-  #   - images/a_dot_burr.jpeg
-  #   - images/a_dot_ham.jpeg
+  assets:
+    - assets/images/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware
