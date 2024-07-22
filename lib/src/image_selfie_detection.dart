@@ -17,15 +17,13 @@ class ImageSelfieDetection extends StatefulWidget {
 class _ImageSelfieDetectionState extends State<ImageSelfieDetection> {
   var faceSdk = FaceSDK.instance;
 
-  var _status = "Ready ";
-  var _similarityStatus = "nil";
-  var _livenessStatus = "nil";
+  var _status = "Face Match Verification";
+  var _similarityStatus = " ";
   var _uiImage1 = Image.asset('assets/images/portrait.png');
   var _uiImage2 = Image.asset('assets/images/portrait.png');
 
   set status(String val) => setState(() => _status = val);
   set similarityStatus(String val) => setState(() => _similarityStatus = val);
-  set livenessStatus(String val) => setState(() => _livenessStatus = val);
   set uiImage1(Image val) => setState(() => _uiImage1 = val);
   set uiImage2(Image val) => setState(() => _uiImage2 = val);
 
@@ -38,30 +36,66 @@ class _ImageSelfieDetectionState extends State<ImageSelfieDetection> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Center(child: Text(_status))),
-      body: Container(
-        margin: EdgeInsets.fromLTRB(0, 0, 0, MediaQuery.of(context).size.height / 8),
-        width: double.infinity,
+      appBar: AppBar(
+        automaticallyImplyLeading: false,
+        title: Text(_status,
+          style: TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.w700,
+              fontSize: 22),
+        ),
+        centerTitle: true,
+        toolbarHeight: 100,
+        backgroundColor: Colors.indigoAccent,
+        elevation: 0,
+        shape: ContinuousRectangleBorder(borderRadius: BorderRadius.circular(70))
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
+            SizedBox(height: 16),
             image(_uiImage1, () {
               startScan(DocumentFormat.jpeg);
             }),
+            Text('Scan Cnic', style: TextStyle(
+                fontSize: 24.0,
+                fontWeight: FontWeight.w600,
+                color: Colors.black87.withOpacity(0.7)
+            ),),
+            SizedBox(height: 16),
             image(_uiImage2, () => setImageDialog(context, 2)),
-            Container(margin: EdgeInsets.fromLTRB(0, 0, 0, 15)),
-            button("Match", () => matchFaces()),
-            button("Liveness", () => startLiveness()),
-            button("Clear", () => clearResults()),
-            Container(margin: EdgeInsets.fromLTRB(0, 15, 0, 0)),
+            Text('Take Selfie', style: TextStyle(
+                fontSize: 24.0,
+                fontWeight: FontWeight.w600,
+                color: Colors.black87.withOpacity(0.7)
+            ),),
+            SizedBox(height: 32),
             Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                button("Match Images", Icons.compare_arrows, () => matchFaces()),
+                SizedBox(height: 32),
+                // button("Liveness", Icons.verified_user, () => startLiveness()),
+                button("Clear Images", Icons.clear, () => clearResults()),
+              ],
+            ),
+            SizedBox(height: 16),
+          Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.all(Radius.circular(10)),
+              border: Border.all(color: Colors.black26)
+            ),
+            width: MediaQuery.sizeOf(context).width,
+            height: 150,
+            child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                text("Similarity: " + _similarityStatus),
-                Container(margin: EdgeInsets.fromLTRB(20, 0, 0, 0)),
-                text("Liveness: " + _livenessStatus)
+                text("Similarity Found: "),
+                Text(_similarityStatus, style: TextStyle(fontSize: 26, color: Colors.pink, fontWeight: FontWeight.w700),)
               ],
             )
+          )
           ],
         ),
       ),
@@ -70,30 +104,34 @@ class _ImageSelfieDetectionState extends State<ImageSelfieDetection> {
 
   Widget image(Image image, Function() onTap) => GestureDetector(
     onTap: onTap,
-    child: Image(height: 150, width: 150, image: image.image),
+    child: Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.all(Radius.circular(15)),
+          border: Border.all(color: Colors.black54, width: 0.5)),
+        child: Image(height: 150, width: 150, image: image.image)),
   );
 
   setImageDialog(BuildContext context, int number) => showDialog(
     context: context,
     builder: (BuildContext context) => AlertDialog(
-      title: Text("Select option"),
-      actions: [useGallery(number), useCamera(number)],
+      title: Text("A recent selfie is needed"),
+      actions: [useCamera(number)],
     ),
   );
-
-  Widget useGallery(int number) {
-    return textButton("Use gallery", () async {
-      Navigator.pop(context);
-      var image = await ImagePicker().pickImage(source: ImageSource.gallery);
-      if (image != null) {
-        var bytes = await File(image.path).readAsBytes();
-        setImage(bytes, ImageType.PRINTED, number);
-      }
-    });
-  }
+  //
+  // Widget useGallery(int number) {
+  //   return textButton("Use gallery", () async {
+  //     Navigator.pop(context);
+  //     var image = await ImagePicker().pickImage(source: ImageSource.gallery);
+  //     if (image != null) {
+  //       var bytes = await File(image.path).readAsBytes();
+  //       setImage(bytes, ImageType.PRINTED, number);
+  //     }
+  //   });
+  // }
 
   Widget useCamera(int number) {
-    return textButton("Use camera", () async {
+    return textButton("Capture Selfie", () async {
       Navigator.pop(context);
       var response = await faceSdk.startFaceCapture(
           config: FaceCaptureConfig(cameraSwitchEnabled: true));
@@ -103,12 +141,11 @@ class _ImageSelfieDetectionState extends State<ImageSelfieDetection> {
   }
 
   setImage(Uint8List bytes, ImageType type, int number) {
-    _similarityStatus = "nil";
+    _similarityStatus = " ";
     var mfImage = MatchFacesImage(bytes, type);
     if (number == 1) {
       mfImage1 = mfImage;
       uiImage1 = Image.memory(bytes);
-      _livenessStatus = "nil";
     }
     if (number == 2) {
       mfImage2 = mfImage;
@@ -150,12 +187,11 @@ class _ImageSelfieDetectionState extends State<ImageSelfieDetection> {
       if (match.isNotEmpty) {
         _similarityStatus = (match[0].similarity * 100).toStringAsFixed(2) + "%";
       } else {
-        _similarityStatus = "failed";
+        _similarityStatus = "Unable to match";
       }
       _status = "Ready";
     });
   }
-
 
   startLiveness() async {
     var result = await faceSdk.startLiveness(
@@ -166,13 +202,11 @@ class _ImageSelfieDetectionState extends State<ImageSelfieDetection> {
     );
     if (result.image == null) return;
     setImage(result.image!, ImageType.LIVE, 1);
-    _livenessStatus = result.liveness.name.toLowerCase();
   }
 
   clearResults() {
     _status = "Ready";
-    _similarityStatus = "nil";
-    _livenessStatus = "nil";
+    _similarityStatus = " ";
     uiImage2 = Image.asset('assets/images/portrait.png');
     uiImage1 = Image.asset('assets/images/portrait.png');
     mfImage1 = null;
@@ -211,15 +245,33 @@ class _ImageSelfieDetectionState extends State<ImageSelfieDetection> {
     );
   }
 
-  Widget button(String text, VoidCallback onPressed) {
-    return ElevatedButton(
+  Widget button(String text, IconData icon, VoidCallback onPressed) {
+    return ElevatedButton.icon(
       onPressed: onPressed,
-      child: Text(text),
+      icon: Icon(icon),
+      label: Text(text, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),),
+      style: ElevatedButton.styleFrom(
+        primary: Colors.indigoAccent,
+        onPrimary: Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8.0),
+        ),
+        padding: EdgeInsets.symmetric(vertical: 12.0, horizontal: 24.0),
+      ),
     );
   }
 
   Widget text(String text) {
-    return Text(text);
+    return Text(
+      text,
+      style: TextStyle(
+        fontSize: 26.0,
+        fontWeight: FontWeight.w600,
+        color: Colors.black45
+      ),
+    );
   }
 }
+
+
 

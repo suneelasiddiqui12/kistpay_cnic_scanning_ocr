@@ -48,27 +48,48 @@ class _DocumentScannerViewState extends State<DocumentScannerView> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Document Scanner'),
+        title: Text('Document Scanner View',
+          style: TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.w700,
+              fontSize: 22),),
         centerTitle: true,
+        backgroundColor: Colors.indigoAccent,
         elevation: 0,
+        toolbarHeight: 100,
+          shape: ContinuousRectangleBorder(borderRadius: BorderRadius.circular(70))
+
+
       ),
       body: SingleChildScrollView(
-        child: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  'Scan Cnic for OCR reading',
+                  style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.black54),),
+              ),
+              SizedBox(height: 20),
               Row(
-                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.start,
                 children: [
                   Icon(
                     Icons.document_scanner_outlined,
                     size: 50,
+                    color: Colors.indigo,
                   ),
                   SizedBox(width: 8),
                   ElevatedButton(
                     style: ButtonStyle(
                       backgroundColor:
-                      MaterialStateProperty.all<Color>(Colors.black),
+                      MaterialStateProperty.all<Color>(Colors.indigoAccent),
                       shape: MaterialStateProperty.all(
                         RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
@@ -88,7 +109,7 @@ class _DocumentScannerViewState extends State<DocumentScannerView> {
                   ElevatedButton(
                     style: ButtonStyle(
                       backgroundColor:
-                      MaterialStateProperty.all<Color>(Colors.black),
+                      MaterialStateProperty.all<Color>(Colors.indigoAccent),
                       shape: MaterialStateProperty.all(
                         RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
@@ -104,33 +125,52 @@ class _DocumentScannerViewState extends State<DocumentScannerView> {
                       ),
                     ),
                   ),
-
                 ],
-
               ),
-              SizedBox(width: 8),
-              ElevatedButton(
-                style: ButtonStyle(
-                  backgroundColor:
-                  MaterialStateProperty.all<Color>(Colors.black),
-                  shape: MaterialStateProperty.all(
-                    RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+              SizedBox(height: 40),
+              Align(
+                alignment: Alignment.centerLeft,
+                  child: Text('Scan Cnic for face matching',
+                    style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.black54)
+                    ,)
+              ),
+              SizedBox(height: 20),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  Icon(
+                    Icons.document_scanner_outlined,
+                    size: 50,
+                    color: Colors.indigo,
+                  ),
+                  SizedBox(width: 8),
+                  ElevatedButton(
+                    style: ButtonStyle(
+                      backgroundColor:
+                      MaterialStateProperty.all<Color>(Colors.indigoAccent),
+                      shape: MaterialStateProperty.all(
+                        RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                    ),
+                    onPressed: () {
+                      Navigator.of(context).push(MaterialPageRoute(builder: (context) =>
+                          ImageSelfieDetection(faceSdk: widget.faceSdk,)
+                        ,));
+                    },
+                    child: const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 4),
+                      child: Text(
+                        'Get Started ---->',
+                        style: TextStyle(color: Colors.white),
+                      ),
                     ),
                   ),
-                ),
-                onPressed: () {
-                  Navigator.of(context).push(MaterialPageRoute(builder: (context) =>
-                    ImageSelfieDetection(faceSdk: widget.faceSdk,)
-                  ,));
-                },
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 4),
-                  child: const Text(
-                    'Image Verification',
-                    style: TextStyle(color: Colors.white),
-                  ),
-                ),
+                ],
               ),
               if (_result?.pdf != null) ...[
                 Padding(
