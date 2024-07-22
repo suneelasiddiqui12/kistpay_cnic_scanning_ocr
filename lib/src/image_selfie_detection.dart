@@ -22,11 +22,6 @@ class _ImageSelfieDetectionState extends State<ImageSelfieDetection> {
   var _uiImage1 = Image.asset('assets/images/portrait.png');
   var _uiImage2 = Image.asset('assets/images/portrait.png');
 
-  set status(String val) => setState(() => _status = val);
-  set similarityStatus(String val) => setState(() => _similarityStatus = val);
-  set uiImage1(Image val) => setState(() => _uiImage1 = val);
-  set uiImage2(Image val) => setState(() => _uiImage2 = val);
-
   DocumentScanner? _documentScanner;
   DocumentScanningResult? _result;
 
@@ -38,108 +33,70 @@ class _ImageSelfieDetectionState extends State<ImageSelfieDetection> {
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        title: Text(_status,
-          style: TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.w700,
-              fontSize: 22),
+        title: Text(
+          _status,
+          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 22),
         ),
         centerTitle: true,
         toolbarHeight: 100,
         backgroundColor: Colors.indigoAccent,
         elevation: 0,
-        shape: ContinuousRectangleBorder(borderRadius: BorderRadius.circular(70))
+        shape: ContinuousRectangleBorder(borderRadius: BorderRadius.circular(70)),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: <Widget>[
-            SizedBox(height: 16),
-            image(_uiImage1, () {
-              startScan(DocumentFormat.jpeg);
-            }),
-            Text('Scan Cnic', style: TextStyle(
-                fontSize: 24.0,
-                fontWeight: FontWeight.w600,
-                color: Colors.black87.withOpacity(0.7)
-            ),),
-            SizedBox(height: 16),
-            image(_uiImage2, () => setImageDialog(context, 2)),
-            Text('Take Selfie', style: TextStyle(
-                fontSize: 24.0,
-                fontWeight: FontWeight.w600,
-                color: Colors.black87.withOpacity(0.7)
-            ),),
-            SizedBox(height: 32),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                button("Match Images", Icons.compare_arrows, () => matchFaces()),
-                SizedBox(height: 32),
-                // button("Liveness", Icons.verified_user, () => startLiveness()),
-                button("Clear Images", Icons.clear, () => clearResults()),
-              ],
-            ),
-            SizedBox(height: 16),
-          Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.all(Radius.circular(10)),
-              border: Border.all(color: Colors.black26)
-            ),
-            width: MediaQuery.sizeOf(context).width,
-            height: 150,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                text("Similarity Found: "),
-                Text(_similarityStatus, style: TextStyle(fontSize: 26, color: Colors.pink, fontWeight: FontWeight.w700),)
-              ],
-            )
-          )
+            const SizedBox(height: 16),
+            imageWidget(_uiImage1, () => startScan(DocumentFormat.jpeg)),
+            labelText('Scan CNIC'),
+            const SizedBox(height: 16),
+            imageWidget(_uiImage2, () => setImageDialog(context, 2)),
+            labelText('Take Selfie'),
+            const SizedBox(height: 32),
+            buttonRow(),
+            const SizedBox(height: 16),
+            similarityStatusContainer(),
           ],
         ),
       ),
     );
   }
 
-  Widget image(Image image, Function() onTap) => GestureDetector(
+  /// Builds an image widget with a border and an onTap function
+  Widget imageWidget(Image image, Function() onTap) => GestureDetector(
     onTap: onTap,
     child: Container(
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.all(Radius.circular(15)),
-          border: Border.all(color: Colors.black54, width: 0.5)),
-        child: Image(height: 150, width: 150, image: image.image)),
+        borderRadius: const BorderRadius.all(Radius.circular(15)),
+        border: Border.all(color: Colors.black54, width: 0.5),
+      ),
+      child: Image(height: 150, width: 150, image: image.image),
+    ),
   );
 
+  /// Displays a dialog to capture a selfie
   setImageDialog(BuildContext context, int number) => showDialog(
     context: context,
     builder: (BuildContext context) => AlertDialog(
-      title: Text("A recent selfie is needed"),
+      title: const Text("A recent selfie is needed"),
       actions: [useCamera(number)],
     ),
   );
-  //
-  // Widget useGallery(int number) {
-  //   return textButton("Use gallery", () async {
-  //     Navigator.pop(context);
-  //     var image = await ImagePicker().pickImage(source: ImageSource.gallery);
-  //     if (image != null) {
-  //       var bytes = await File(image.path).readAsBytes();
-  //       setImage(bytes, ImageType.PRINTED, number);
-  //     }
-  //   });
-  // }
 
+  /// Captures a selfie using the camera
   Widget useCamera(int number) {
     return textButton("Capture Selfie", () async {
       Navigator.pop(context);
       var response = await faceSdk.startFaceCapture(
-          config: FaceCaptureConfig(cameraSwitchEnabled: true));
+        config: FaceCaptureConfig(cameraSwitchEnabled: true),
+      );
       var image = response.image;
       if (image != null) setImage(image.image, image.imageType, number);
     });
   }
 
+  /// Sets the image and updates the UI
   setImage(Uint8List bytes, ImageType type, int number) {
     _similarityStatus = " ";
     var mfImage = MatchFacesImage(bytes, type);
@@ -153,6 +110,7 @@ class _ImageSelfieDetectionState extends State<ImageSelfieDetection> {
     }
   }
 
+  /// Matches faces from two images
   matchFaces() async {
     if (mfImage1 == null || mfImage2 == null) {
       setState(() {
@@ -172,10 +130,8 @@ class _ImageSelfieDetectionState extends State<ImageSelfieDetection> {
 
     if (response.results.isNotEmpty) {
       for (var result in response.results) {
-        if (result is ComparedFacesPair) {
-          print('ComparedFacesPair: similarity=${result.similarity}');
-        }
-      }
+        print('ComparedFacesPair: similarity=${result.similarity}');
+            }
     } else {
       print('No match found');
     }
@@ -185,7 +141,7 @@ class _ImageSelfieDetectionState extends State<ImageSelfieDetection> {
 
     setState(() {
       if (match.isNotEmpty) {
-        _similarityStatus = (match[0].similarity * 100).toStringAsFixed(2) + "%";
+        _similarityStatus = "${(match[0].similarity * 100).toStringAsFixed(2)}%";
       } else {
         _similarityStatus = "Unable to match";
       }
@@ -193,26 +149,19 @@ class _ImageSelfieDetectionState extends State<ImageSelfieDetection> {
     });
   }
 
-  startLiveness() async {
-    var result = await faceSdk.startLiveness(
-      config: LivenessConfig(skipStep: [LivenessSkipStep.ONBOARDING_STEP]),
-      notificationCompletion: (notification) {
-        print('Notification status ==${notification.status}');
-      },
-    );
-    if (result.image == null) return;
-    setImage(result.image!, ImageType.LIVE, 1);
-  }
-
+  /// Clears the results and resets the UI
   clearResults() {
-    _status = "Ready";
-    _similarityStatus = " ";
-    uiImage2 = Image.asset('assets/images/portrait.png');
-    uiImage1 = Image.asset('assets/images/portrait.png');
-    mfImage1 = null;
-    mfImage2 = null;
+    setState(() {
+      _status = "Ready";
+      _similarityStatus = " ";
+      uiImage2 = Image.asset('assets/images/portrait.png');
+      uiImage1 = Image.asset('assets/images/portrait.png');
+      mfImage1 = null;
+      mfImage2 = null;
+    });
   }
 
+  /// Starts scanning the document
   void startScan(DocumentFormat format) async {
     try {
       _result = null;
@@ -238,6 +187,7 @@ class _ImageSelfieDetectionState extends State<ImageSelfieDetection> {
     }
   }
 
+  /// Helper function to create a text button
   Widget textButton(String text, VoidCallback onPressed) {
     return TextButton(
       onPressed: onPressed,
@@ -245,33 +195,80 @@ class _ImageSelfieDetectionState extends State<ImageSelfieDetection> {
     );
   }
 
+  /// Helper function to create an elevated button with an icon
   Widget button(String text, IconData icon, VoidCallback onPressed) {
     return ElevatedButton.icon(
       onPressed: onPressed,
       icon: Icon(icon),
-      label: Text(text, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),),
+      label: Text(text, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
       style: ElevatedButton.styleFrom(
-        primary: Colors.indigoAccent,
-        onPrimary: Colors.white,
+        foregroundColor: Colors.white,
+        backgroundColor: Colors.indigoAccent,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(8.0),
         ),
-        padding: EdgeInsets.symmetric(vertical: 12.0, horizontal: 24.0),
+        padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 24.0),
       ),
     );
   }
 
-  Widget text(String text) {
+  /// Helper function to create a label text
+  Widget labelText(String text) {
     return Text(
       text,
       style: TextStyle(
-        fontSize: 26.0,
+        fontSize: 24.0,
         fontWeight: FontWeight.w600,
-        color: Colors.black45
+        color: Colors.black87.withOpacity(0.7),
       ),
     );
   }
-}
 
+  /// Helper function to create a row of buttons
+  Widget buttonRow() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: [
+        button("Match Images", Icons.compare_arrows, matchFaces),
+        const SizedBox(height: 32),
+        button("Clear Images", Icons.clear, clearResults),
+      ],
+    );
+  }
+
+  /// Helper function to create a similarity status container
+  Widget similarityStatusContainer() {
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: const BorderRadius.all(Radius.circular(10)),
+        border: Border.all(color: Colors.black26),
+      ),
+      width: MediaQuery.sizeOf(context).width,
+      height: 150,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          labelText("Similarity Found: "),
+          Text(
+            _similarityStatus,
+            style: const TextStyle(fontSize: 26, color: Colors.pink, fontWeight: FontWeight.w700),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Sets the status with a new value and updates the state
+  set status(String val) => setState(() => _status = val);
+
+  /// Sets the similarity status with a new value and updates the state
+  set similarityStatus(String val) => setState(() => _similarityStatus = val);
+
+  /// Sets the first UI image and updates the state
+  set uiImage1(Image val) => setState(() => _uiImage1 = val);
+
+  /// Sets the second UI image and updates the state
+  set uiImage2(Image val) => setState(() => _uiImage2 = val);
+}
 
 

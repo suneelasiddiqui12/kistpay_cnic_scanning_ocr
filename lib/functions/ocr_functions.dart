@@ -82,16 +82,6 @@ class OcrFunctions {
     }
     textDetector.close();
     return _cnicOcrModel;
-    // if (_cnicOcrModel.cnicNumber.length > 0 &&
-    //     _cnicOcrModel.cnicHolderDateOfBirth.length > 0 &&
-    //     _cnicOcrModel.cnicIssueDate.length > 0 &&
-    //     _cnicOcrModel.cnicExpiryDate.length > 0) {
-    //   print('==================== SMART CARD DETAILS $_cnicOcrModel');
-    //   return Future.value(_cnicOcrModel);
-    // } else {
-    //   print('==================== OLD CARD DETAILS $_cnicOcrModel');
-    //   return await scanImage(imageSource: source);
-    // }
   }
 
   /// it will sort the dates
@@ -109,14 +99,4 @@ class OcrFunctions {
     return dates;
   }
 
-  /// this method will be called when user uses this package
-  // Future<CnicOcrModel> scanImage({required ImageSource imageSource}) async {
-  //   source = imageSource;
-  //   XFile? image = await _picker.pickImage(source: imageSource);
-  //   if (image == null) {
-  //     return Future.value(_cnicOcrModel);
-  //   } else {
-  //     return await scanCnic(imageToScan: InputImage.fromFilePath(image.path));
-  //   }
-  // }
 }

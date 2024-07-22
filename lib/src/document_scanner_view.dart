@@ -18,20 +18,25 @@ class DocumentScannerView extends StatefulWidget {
 }
 
 class _DocumentScannerViewState extends State<DocumentScannerView> {
+  // Document scanner instance
   DocumentScanner? _documentScanner;
+  // Result of the document scan
   DocumentScanningResult? _result;
-  TextEditingController _nameController = TextEditingController();
-  TextEditingController _fatherNameController = TextEditingController();
-  TextEditingController _genderController = TextEditingController();
-  TextEditingController _countryController = TextEditingController();
-  TextEditingController _identityNumberController = TextEditingController();
-  TextEditingController _issueDateController = TextEditingController();
-  TextEditingController _dobController = TextEditingController();
-  TextEditingController _expiryDateController = TextEditingController();
+  // Controllers for the text fields
+  final _nameController = TextEditingController();
+  final _fatherNameController = TextEditingController();
+  final _genderController = TextEditingController();
+  final _countryController = TextEditingController();
+  final _identityNumberController = TextEditingController();
+  final _issueDateController = TextEditingController();
+  final _dobController = TextEditingController();
+  final _expiryDateController = TextEditingController();
+  // Model to store CNIC OCR results
   CnicOcrModel _cnicOcrModel = CnicOcrModel();
 
   @override
   void dispose() {
+    // Close document scanner and dispose of text controllers
     _documentScanner?.close();
     _nameController.dispose();
     _fatherNameController.dispose();
@@ -48,137 +53,99 @@ class _DocumentScannerViewState extends State<DocumentScannerView> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Document Scanner View',
+        title: const Text(
+          'Document Scanner View',
           style: TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.w700,
-              fontSize: 22),),
+            color: Colors.white,
+            fontWeight: FontWeight.w700,
+            fontSize: 22,
+          ),
+        ),
         centerTitle: true,
         backgroundColor: Colors.indigoAccent,
         elevation: 0,
         toolbarHeight: 100,
-          shape: ContinuousRectangleBorder(borderRadius: BorderRadius.circular(70))
-
-
+        shape: ContinuousRectangleBorder(borderRadius: BorderRadius.circular(70)),
       ),
       body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  'Scan Cnic for OCR reading',
-                  style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.black54),),
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            // Header text for OCR scanning
+            const Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                'Scan CNIC for OCR reading',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.black54,
+                ),
               ),
-              SizedBox(height: 20),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  Icon(
-                    Icons.document_scanner_outlined,
-                    size: 50,
-                    color: Colors.indigo,
-                  ),
-                  SizedBox(width: 8),
-                  ElevatedButton(
-                    style: ButtonStyle(
-                      backgroundColor:
-                      MaterialStateProperty.all<Color>(Colors.indigoAccent),
-                      shape: MaterialStateProperty.all(
-                        RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                    ),
-                    onPressed: () => startScan(DocumentFormat.pdf),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 4),
-                      child: const Text(
-                        'Scan PDF',
-                        style: TextStyle(color: Colors.white),
-                      ),
-                    ),
-                  ),
-                  SizedBox(width: 8),
-                  ElevatedButton(
-                    style: ButtonStyle(
-                      backgroundColor:
-                      MaterialStateProperty.all<Color>(Colors.indigoAccent),
-                      shape: MaterialStateProperty.all(
-                        RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                    ),
-                    onPressed: () => startScan(DocumentFormat.jpeg),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 4),
-                      child: const Text(
-                        'Scan JPEG',
-                        style: TextStyle(color: Colors.white),
-                      ),
-                    ),
-                  ),
-                ],
+            ),
+            const SizedBox(height: 20),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                const Icon(
+                  Icons.document_scanner_outlined,
+                  size: 50,
+                  color: Colors.indigo,
+                ),
+                const SizedBox(width: 8),
+                // Button to start scanning PDF
+                _buildElevatedButton('Scan PDF', () => startScan(DocumentFormat.pdf)),
+                const SizedBox(width: 8),
+                // Button to start scanning JPEG
+                _buildElevatedButton('Scan JPEG', () => startScan(DocumentFormat.jpeg)),
+              ],
+            ),
+            const SizedBox(height: 40),
+            // Header text for face matching
+            const Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                'Scan CNIC for face matching',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.black54,
+                ),
               ),
-              SizedBox(height: 40),
-              Align(
-                alignment: Alignment.centerLeft,
-                  child: Text('Scan Cnic for face matching',
-                    style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.black54)
-                    ,)
-              ),
-              SizedBox(height: 20),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  Icon(
-                    Icons.document_scanner_outlined,
-                    size: 50,
-                    color: Colors.indigo,
-                  ),
-                  SizedBox(width: 8),
-                  ElevatedButton(
-                    style: ButtonStyle(
-                      backgroundColor:
-                      MaterialStateProperty.all<Color>(Colors.indigoAccent),
-                      shape: MaterialStateProperty.all(
-                        RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
+            ),
+            const SizedBox(height: 20),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                const Icon(
+                  Icons.document_scanner_outlined,
+                  size: 50,
+                  color: Colors.indigo,
+                ),
+                const SizedBox(width: 8),
+                // Button to navigate to the ImageSelfieDetection screen
+                _buildElevatedButton(
+                  'Get Started ---->',
+                      () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => ImageSelfieDetection(faceSdk: widget.faceSdk),
                       ),
-                    ),
-                    onPressed: () {
-                      Navigator.of(context).push(MaterialPageRoute(builder: (context) =>
-                          ImageSelfieDetection(faceSdk: widget.faceSdk,)
-                        ,));
-                    },
-                    child: const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 4),
-                      child: Text(
-                        'Get Started ---->',
-                        style: TextStyle(color: Colors.white),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              if (_result?.pdf != null) ...[
-                Padding(
-                  padding: const EdgeInsets.only(
-                      top: 16, bottom: 8, right: 8, left: 8),
+                    );
+                  },
+                ),
+              ],
+            ),
+            // Display PDF document if available
+            if (_result?.pdf != null)
+              ...[
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 8),
                   child: Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text('PDF Document:')),
+                    alignment: Alignment.centerLeft,
+                    child: Text('PDF Document:'),
+                  ),
                 ),
                 SizedBox(
                   height: 300,
@@ -191,43 +158,69 @@ class _DocumentScannerViewState extends State<DocumentScannerView> {
                   ),
                 ),
               ],
-                if (_result?.images.isNotEmpty == true )...[
-                  SizedBox(
-                    height: 400,
-                    child: Image.file(File(_result!.images.first)),
-                  ),
-                  SizedBox(height: 20,),
-                  _buildTextField('Name', _nameController),
-                  _buildTextField('Cnic', _identityNumberController),
-                  _buildTextField('DOB', _dobController),
-                  _buildTextField('Date of Issue', _issueDateController),
-                  _buildTextField('Date of Expiry', _expiryDateController),
-                ]
-
-              ],
-          ),
+            // Display scanned images and text fields if available
+            if (_result?.images.isNotEmpty == true)
+              ...[
+                SizedBox(
+                  height: 400,
+                  child: Image.file(File(_result!.images.first)),
+                ),
+                const SizedBox(height: 20),
+                _buildTextField('Name', _nameController),
+                _buildTextField('CNIC', _identityNumberController),
+                _buildTextField('DOB', _dobController),
+                _buildTextField('Date of Issue', _issueDateController),
+                _buildTextField('Date of Expiry', _expiryDateController),
+              ]
+          ],
         ),
       ),
     );
   }
 
+  // Helper method to build elevated buttons
+  ElevatedButton _buildElevatedButton(String text, VoidCallback onPressed) {
+    return ElevatedButton(
+      style: ButtonStyle(
+        backgroundColor: MaterialStateProperty.all<Color>(Colors.indigoAccent),
+        shape: MaterialStateProperty.all(
+          RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+          ),
+        ),
+      ),
+      onPressed: onPressed,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 4),
+        child: Text(
+          text,
+          style: const TextStyle(color: Colors.white),
+        ),
+      ),
+    );
+  }
+
+  // Helper method to build text fields
   Widget _buildTextField(String labelText, TextEditingController controller) {
     return Padding(
-      padding: EdgeInsets.symmetric(vertical: 8.0),
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: TextField(
         controller: controller,
         decoration: InputDecoration(
           labelText: labelText,
-          border: OutlineInputBorder(),
+          border: const OutlineInputBorder(),
         ),
       ),
     );
   }
 
+  // Method to start scanning documents
   void startScan(DocumentFormat format) async {
     try {
-      _result = null;
-      setState(() {});
+      // Reset the result before scanning
+      setState(() {
+        _result = null;
+      });
       _documentScanner?.close();
       _documentScanner = DocumentScanner(
         options: DocumentScannerOptions(
@@ -237,12 +230,12 @@ class _DocumentScannerViewState extends State<DocumentScannerView> {
           pageLimit: 1,
         ),
       );
-      print('result === ${_result?.images.length}');
 
+      // Perform the document scan
       _result = await _documentScanner?.scanDocument();
-      print('result === ${_result?.images.first}');
       setState(() {});
       if (_result?.images.isNotEmpty == true) {
+        // Scan the CNIC OCR if images are available
         await scanCnicOcr(_result!.images.first);
       }
     } catch (e) {
@@ -250,31 +243,22 @@ class _DocumentScannerViewState extends State<DocumentScannerView> {
     }
   }
 
+  // Method to scan CNIC OCR and update text fields
   Future<void> scanCnicOcr(String imagePath) async {
     try {
-      CnicOcrModel cnicOcrModel = CnicOcrModel();
-      cnicOcrModel =  await OcrFunctions().scanCnic(imageToScan: InputImage.fromFilePath(imagePath));
+      final cnicOcrModel = await OcrFunctions().scanCnic(imageToScan: InputImage.fromFilePath(imagePath));
 
+      // Update the state with scanned OCR results
       setState(() {
         _cnicOcrModel = cnicOcrModel;
         _nameController.text = _cnicOcrModel.cnicHolderName;
-        print('tst==${_cnicOcrModel.cnicHolderName}');
         _identityNumberController.text = _cnicOcrModel.cnicNumber;
         _dobController.text = _cnicOcrModel.cnicHolderDateOfBirth;
         _issueDateController.text = _cnicOcrModel.cnicIssueDate;
         _expiryDateController.text = _cnicOcrModel.cnicExpiryDate;
-
-        // Additional debug prints
-        print('Name: ${_nameController.text}');
-        print('CNIC: ${_identityNumberController.text}');
-        print('DOB: ${_dobController.text}');
-        print('Issue Date: ${_issueDateController.text}');
-        print('Expiry Date: ${_expiryDateController.text}');
       });
     } catch (e) {
       print('Error in scanCnicOcr: $e');
     }
   }
-
 }
-
