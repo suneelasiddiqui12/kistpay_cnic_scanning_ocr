@@ -4,7 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_face_api/flutter_face_api.dart';
 
-void main() => runApp(const MaterialApp(home: MyApp()));
+void main() => runApp(const MaterialApp(
+    debugShowCheckedModeBanner: false, // Set this to false
+    home: MyApp()));
 
 class MyApp extends StatefulWidget {
   const MyApp({super.key});
