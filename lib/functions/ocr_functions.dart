@@ -1,12 +1,15 @@
+import 'dart:io';
+
 import 'package:app_detection/model/cnic_ocr_model.dart';
+import 'package:app_detection/model/utility_bill_model.dart';
 import 'package:google_ml_kit/google_ml_kit.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 
+  class OcrFunctions {
 
-class OcrFunctions {
+    CnicOcrModel _cnicOcrModel = CnicOcrModel();
 
-  CnicOcrModel _cnicOcrModel = CnicOcrModel();
   bool isFrontScan = false;
   /// it will pick your image either form Gallery or from Camera
   final ImagePicker _picker = ImagePicker();
@@ -99,4 +102,100 @@ class OcrFunctions {
     return dates;
   }
 
+
+  // OCR for bills
+  Future<String> extractText(File imageFile) async {
+    final inputImage = InputImage.fromFile(imageFile);
+    final textRecognizer = GoogleMlKit.vision.textRecognizer();
+    final recognizedText = await textRecognizer.processImage(inputImage);
+    return recognizedText.text;
+  }
+
+    UtilityBillModel parseText(String text) {
+      List<String> lines = text.split('\n');
+      String name = _extractName(lines);
+      int addressStartIndex = lines.indexOf(name) + 1;
+      int cnicIndex = lines.indexWhere((line) => line.contains('CNIC No.') || line.contains('CNIC Number'));
+      String address = (cnicIndex != -1)
+          ? lines.sublist(addressStartIndex, cnicIndex).join('\n').trim()
+          : lines.sublist(addressStartIndex).join('\n').trim();
+      String city = text.contains('KE') ? 'Karachi' : '';
+      String amountPayable = _extractLineValue(lines, 'Amount Payable');
+      String issueDate = _extractLineValue(lines, 'Issue Date');
+      String dueDate = _extractDueDate(lines);
+      String paidDate = _extractPaidDateIfAvailable(text, lines);
+      print('Extracted name: $name');
+      print('Extracted address: $address');
+      print('Extracted city: $city');
+      print('Extracted issueDate: $issueDate');
+      print('Extracted dueDate: $dueDate');
+      print('Extracted paidDate: $paidDate');
+
+      return UtilityBillModel(
+        name: name,
+        address: address,
+        city: city,
+        amountPayable: amountPayable,
+        issueDate: issueDate,
+        dueDate: dueDate,
+        paidDate: paidDate,
+      );
+
+    }
+
+  String _extractName(List<String> lines) {
+    return lines.firstWhere(
+          (line) => line.trim().isNotEmpty && !RegExp(r'\d').hasMatch(line) && line.split(' ').length > 1,
+      orElse: () => '',
+    );
+  }
+
+  String _extractLineValue(List<String> lines, String keyword) {
+    int index = lines.indexWhere((line) => line.contains(keyword));
+    if (index != -1) {
+      // Check the line after the keyword
+      if (index + 1 < lines.length) {
+        return lines[index + 1].trim();
+      }
+      // Check the line containing the keyword itself if it might have the value
+      else if (RegExp(r'\d{2}-[A-Za-z]{3}-\d{2}').hasMatch(lines[index])) {
+        final match = RegExp(r'\d{2}-[A-Za-z]{3}-\d{2}').firstMatch(lines[index]);
+        return match?.group(0)?.trim() ?? '';
+      }
+    }
+    return '';
+  }
+
+  String _extractDueDate(List<String> lines) {
+    // Start looking from the bottom of the document for the due date
+    for (int i = lines.length - 1; i >= 0; i--) {
+      if (lines[i].contains('Due Date')) {
+        // Check the same line for the due date in the format dd-MMM-yy
+        final match = RegExp(r'\d{2}-[A-Za-z]{3}-\d{2}').firstMatch(lines[i]);
+        if (match != null) {
+          return match.group(0)?.trim() ?? '';
+        }
+        // If not found in the same line, check the previous line
+        if (i > 0) {
+          final prevLineMatch = RegExp(r'\d{2}-[A-Za-z]{3}-\d{2}').firstMatch(lines[i - 1]);
+          if (prevLineMatch != null) {
+            return prevLineMatch.group(0)?.trim() ?? '';
+          }
+        }
+      }
+    }
+    return '';
+  }
+
+  String _extractPaidDateIfAvailable(String text, List<String> lines) {
+    if (text.contains('PAID')) {
+      int dateLineIndex = lines.indexWhere((line) => line.startsWith('Date:'));
+      if (dateLineIndex != -1) {
+        String dateLine = lines[dateLineIndex];
+        // Extracting the date from the format "Date: dd-MMM-yyyy"
+        return RegExp(r'\d{2}-[A-Za-z]{3}-\d{4}').firstMatch(dateLine)?.group(0)?.trim() ?? 'No paid date available';
+      }
+    }
+    return '';
+  }
 }

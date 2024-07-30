@@ -51,6 +51,8 @@ dependencies:
   flutter_face_core_basic: ^6.1.0
   fluttertoast:
   intl:
+  lottie:
+  syncfusion_flutter_pdf:
 dev_dependencies:
   flutter_test:
     sdk: flutter
