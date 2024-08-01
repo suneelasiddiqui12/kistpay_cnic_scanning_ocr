@@ -168,7 +168,7 @@ class _UtilityBillScannerState extends State<UtilityBillScanner> {
           const SizedBox(height: 10),
           _buildExtractedDataRow('Amount Payable: ', _utilityBill?.amountPayable ?? 'Not Available'),
           const SizedBox(height: 10),
-          _buildExtractedDataRow('Issue Date: ', _utilityBill?.issueDate ?? 'Not Available'),
+          _buildExtractedDataRow('Bill Month ', _utilityBill?.issueDate ?? 'Not Available'),
           const SizedBox(height: 10),
           _buildExtractedDataRow('Due Date: ', _utilityBill?.dueDate ?? 'Not Available'),
           const SizedBox(height: 10),
