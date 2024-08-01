@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:app_detection/functions/ocr_functions.dart';
 import 'package:app_detection/model/cnic_ocr_model.dart';
 import 'package:app_detection/src/image_selfie_detection.dart';
+import 'package:app_detection/src/utility_bill_scanner.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_face_api/flutter_face_api.dart';
 import 'package:flutter_pdfview/flutter_pdfview.dart';
@@ -131,6 +132,41 @@ class _DocumentScannerViewState extends State<DocumentScannerView> {
                     Navigator.of(context).push(
                       MaterialPageRoute(
                         builder: (context) => ImageSelfieDetection(faceSdk: widget.faceSdk),
+                      ),
+                    );
+                  },
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+            const Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                'Scan Utility Bill for OCR',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.black54,
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                const Icon(
+                  Icons.document_scanner_outlined,
+                  size: 50,
+                  color: Colors.indigo,
+                ),
+                const SizedBox(width: 8),
+                // Button to navigate to the ImageSelfieDetection screen
+                _buildElevatedButton(
+                  'Get Started --->',
+                      () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => UtilityBillScanner(),
                       ),
                     );
                   },

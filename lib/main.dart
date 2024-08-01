@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 import 'package:app_detection/src/document_scanner_view.dart';
+import 'package:app_detection/src/utility_bill_scanner.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_face_api/flutter_face_api.dart';
@@ -32,7 +33,7 @@ class _MyAppState extends State<MyApp> {
     if (!await initialize()) return;
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (context) => DocumentScannerView(faceSdk: faceSdk)),
+       MaterialPageRoute(builder: (context) => DocumentScannerView(faceSdk: faceSdk)),
     );
   }
 
