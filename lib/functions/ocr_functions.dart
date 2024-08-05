@@ -1,10 +1,13 @@
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:app_detection/model/cnic_ocr_model.dart';
 import 'package:app_detection/model/utility_bill_model.dart';
 import 'package:google_ml_kit/google_ml_kit.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
+import 'package:image/image.dart' as img;
+
 
   class OcrFunctions {
 
@@ -102,7 +105,6 @@ import 'package:intl/intl.dart';
     return dates;
   }
 
-
   // OCR for bills
   Future<String> extractText(File imageFile) async {
     final inputImage = InputImage.fromFile(imageFile);
@@ -198,4 +200,39 @@ import 'package:intl/intl.dart';
     }
     return '';
   }
+
+    Future<File> cropBottomLeft(File imageFile) async {
+      final bytes = await imageFile.readAsBytes();
+      final originalImage = img.decodeImage(Uint8List.fromList(bytes));
+
+      if (originalImage == null) return imageFile;
+
+      // Define the cropping area (e.g., bottom left corner)
+      final int cropWidth = originalImage.width ~/ 2; // 50% width
+      final int cropHeight = originalImage.height ~/ 2.5; // 40% height (adjust if needed)
+
+      final croppedImage = img.copyCrop(
+        originalImage,
+        0, // X position (start from left)
+        originalImage.height - cropHeight, // Y position (start from the bottom)
+        cropWidth,
+        cropHeight,
+      );
+
+      final croppedFile = File('${imageFile.path}_cropped.png');
+      await croppedFile.writeAsBytes(img.encodePng(croppedImage));
+      return croppedFile;
+    }
+
+    // OCR for the cropped image
+    Future<String> extractCroppedText(File croppedImageFile) async {
+      final inputImage = InputImage.fromFile(croppedImageFile);
+      final textRecognizer = GoogleMlKit.vision.textRecognizer();
+      final recognizedText = await textRecognizer.processImage(inputImage);
+      return recognizedText.text;
+    }
+
+
+
+
 }

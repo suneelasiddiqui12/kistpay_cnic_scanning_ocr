@@ -2,6 +2,7 @@ import 'package:app_detection/functions/ocr_functions.dart';
 import 'package:app_detection/model/utility_bill_model.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:intl/intl.dart';
 import 'dart:io';
 import 'package:lottie/lottie.dart';
 
@@ -18,7 +19,9 @@ class _UtilityBillScannerState extends State<UtilityBillScanner> {
   String _extractedText = '';
   UtilityBillModel? _utilityBill;
   bool _isLoading = false;
-  final OcrFunctions _ocrFunctions = OcrFunctions(); // Instantiate OcrFunctions
+  XFile? _croppedImage;
+  String _croppedText = '';
+  final OcrFunctions _ocrFunctions = OcrFunctions();
 
   Future<void> _pickImage(ImageSource source) async {
     try {
@@ -42,8 +45,16 @@ class _UtilityBillScannerState extends State<UtilityBillScanner> {
     final text = await _ocrFunctions.extractText(imageFile);
     print("OCR Text Output: $text");
 
+    // Crop the image
+    final croppedFile = await _ocrFunctions.cropBottomLeft(imageFile);
+    final croppedText = await _ocrFunctions.extractCroppedText(croppedFile);
+
+    print("Cropped Text OCR: $croppedText");
+
     setState(() {
       _extractedText = text;
+      _croppedText = croppedText;
+      _croppedImage = XFile(croppedFile.path); // Update the cropped image state
       _parseText(text);
       _isLoading = false;
     });
@@ -52,6 +63,11 @@ class _UtilityBillScannerState extends State<UtilityBillScanner> {
   void _parseText(String text) {
     print("Parsing text...");
     _utilityBill = _ocrFunctions.parseText(text);
+
+    if (_utilityBill?.dueDate != null) {
+      // Check if the bill is within 3 months old
+      _utilityBill!.isVerified = _isBillVerified(_utilityBill!.dueDate);
+    }
 
     // Debug print to confirm parsing
     print("Parsed Data:");
@@ -62,10 +78,24 @@ class _UtilityBillScannerState extends State<UtilityBillScanner> {
     print("Issue Date: ${_utilityBill?.issueDate}");
     print("Due Date: ${_utilityBill?.dueDate}");
     print("Paid Date: ${_utilityBill?.paidDate}");
+    print("Is Verified: ${_utilityBill?.isVerified}");
+
 
     setState(() {}); // Ensure UI updates after parsing
   }
+  bool _isBillVerified(String dueDate) {
+    try {
+      final format = DateFormat('dd-MMM-yy'); // Assuming date format is 'dd-MMM-yy'
+      final dueDateParsed = format.parse(dueDate);
+      final now = DateTime.now();
+      final difference = now.difference(dueDateParsed);
 
+      return difference.inDays <= 90; // 90 days = 3 months
+    } catch (e) {
+      print("Error parsing due date: $e");
+      return false;
+    }
+  }
   @override
   Widget build(BuildContext context) {
     print('Building UI with UtilityBill: ${_utilityBill?.name}');
@@ -102,6 +132,12 @@ class _UtilityBillScannerState extends State<UtilityBillScanner> {
               if (_utilityBill != null)
                 _utilityBill == null ? const Text('No data') : _buildExtractedData(),
               const SizedBox(height: 20),
+              if (_croppedImage != null && !_isLoading) ...[
+                const SizedBox(height: 20),
+                Image.file(File(_croppedImage!.path)),
+                const SizedBox(height: 10),
+                Text(_croppedText),
+              ],
             ],
           ),
         ),
@@ -174,6 +210,7 @@ class _UtilityBillScannerState extends State<UtilityBillScanner> {
           const SizedBox(height: 10),
           _buildExtractedDataRow('Paid Date: ', _utilityBill?.paidDate ?? 'Not Available'),
           const SizedBox(height: 10),
+          _buildExtractedDataRow('Verification: ', _utilityBill?.isVerified == true ? 'Verified' : 'Not Verified'),
         ],
       ),
     );
