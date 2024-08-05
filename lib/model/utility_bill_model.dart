@@ -6,6 +6,7 @@ class UtilityBillModel {
   final String issueDate;
   final String dueDate;
   final String paidDate;
+  bool isVerified; // Add this field
 
   UtilityBillModel({
      this.name = '',
@@ -15,5 +16,6 @@ class UtilityBillModel {
      this.issueDate = '',
      this.dueDate = '',
      this.paidDate = '',
+    this.isVerified = false,
   });
 }
