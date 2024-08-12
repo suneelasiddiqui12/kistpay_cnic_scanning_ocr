@@ -126,6 +126,9 @@ import 'package:image/image.dart' as img;
       String issueDate = _extractLineValue(lines, 'Issue Date');
       String dueDate = _extractDueDate(lines);
       String paidDate = _extractPaidDateIfAvailable(text, lines);
+      List<String> datesAfterMMYY = extractNextThreeDatesAfterMMYY(lines);
+
+
       print('Extracted name: $name');
       print('Extracted address: $address');
       print('Extracted city: $city');
@@ -141,6 +144,7 @@ import 'package:image/image.dart' as img;
         issueDate: issueDate,
         dueDate: dueDate,
         paidDate: paidDate,
+        datesAfterMMYY: datesAfterMMYY,
       );
 
     }
@@ -233,6 +237,26 @@ import 'package:image/image.dart' as img;
     }
 
 
+    List<String> extractNextThreeDatesAfterMMYY(List<String> lines) {
+      List<String> extractedDates = [];
+      final mmYYIndex = lines.indexWhere((line) => line.trim().contains('MM') && line.contains('/YY'));
+
+      // Debugging: Print the lines and index
+      print("Lines: $lines");
+      print("MM/YY Index: $mmYYIndex");
+
+      if (mmYYIndex != -1 && mmYYIndex + 3 < lines.length) {
+        for (int i = 1; i <= 3; i++) {
+          print("Checking line: ${lines[mmYYIndex + i]}");  // Debugging line check
+          if (RegExp(r'\d{2}/\d{2}').hasMatch(lines[mmYYIndex + i])) {
+            extractedDates.add(lines[mmYYIndex + i].trim());
+          }
+        }
+      }
+
+      print("Extracted Dates: $extractedDates");  // Final debug print
+      return extractedDates;
+    }
 
 
-}
+  }

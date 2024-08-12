@@ -79,7 +79,7 @@ class _UtilityBillScannerState extends State<UtilityBillScanner> {
     print("Due Date: ${_utilityBill?.dueDate}");
     print("Paid Date: ${_utilityBill?.paidDate}");
     print("Is Verified: ${_utilityBill?.isVerified}");
-
+    print("Extracted dates ${_utilityBill?.datesAfterMMYY}");
 
     setState(() {}); // Ensure UI updates after parsing
   }
@@ -134,9 +134,81 @@ class _UtilityBillScannerState extends State<UtilityBillScanner> {
               const SizedBox(height: 20),
               if (_croppedImage != null && !_isLoading) ...[
                 const SizedBox(height: 20),
-                Image.file(File(_croppedImage!.path)),
-                const SizedBox(height: 10),
-                Text(_croppedText),
+                const Text(
+                  'Billing and Payment History',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.black87,
+                    decoration: TextDecoration.underline,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 26
+                  )
+                ),
+             //   Image.file(File(_croppedImage!.path)),
+                // Text(_croppedText),
+                const SizedBox(height: 20),
+                if (_utilityBill?.datesAfterMMYY.isNotEmpty == true)
+                 Column(
+                   crossAxisAlignment: CrossAxisAlignment.start,
+                   children: [
+                      SingleChildScrollView(
+                       scrollDirection: Axis.horizontal,
+                       child: Container(
+                         padding: const EdgeInsets.all(10),
+                         decoration: BoxDecoration(
+                           color: Colors.blueGrey.withOpacity(0.3),
+                           border: Border.all(color: Colors.black12),
+                           borderRadius: BorderRadius.circular(12),
+                         ),
+                         child: const Row(
+                           children: [
+                             Text(
+                                 'MM/YY',
+                                 textAlign: TextAlign.center,
+                                 style: TextStyle(
+                                     color: Colors.black87,
+                                     fontWeight: FontWeight.w400,
+                                     fontSize: 22
+                                 )
+                             ),
+                             SizedBox(width: 16),
+                             Text(
+                                 'Billed Amount',
+                                 textAlign: TextAlign.center,
+                                 style: TextStyle(
+                                     color: Colors.black87,
+                                     fontWeight: FontWeight.w400,
+                                     fontSize: 22
+                                 )
+                             ),
+                             SizedBox(width: 16),
+                             Text(
+                                 'Pay-Date',
+                                 textAlign: TextAlign.center,
+                                 style: TextStyle(
+                                     color: Colors.black87,
+                                     fontWeight: FontWeight.w400,
+                                     fontSize: 22
+                                 )
+                             ),
+                             SizedBox(width: 16),
+                             Text(
+                                 'Payment',
+                                 textAlign: TextAlign.center,
+                                 style: TextStyle(
+                                     color: Colors.black87,
+                                     fontWeight: FontWeight.w400,
+                                     fontSize: 22
+                                 )
+                             ),
+                           ],
+                         ),
+                       ),
+                     ),
+                     _buildDateListView(),
+                   ],
+                 )
+
               ],
             ],
           ),
@@ -144,7 +216,6 @@ class _UtilityBillScannerState extends State<UtilityBillScanner> {
       ),
     );
   }
-
   Widget _buildImagePickerButtons() {
     return Center(
       child: Column(
@@ -212,6 +283,23 @@ class _UtilityBillScannerState extends State<UtilityBillScanner> {
           const SizedBox(height: 10),
           _buildExtractedDataRow('Verification: ', _utilityBill?.isVerified == true ? 'Verified' : 'Not Verified'),
         ],
+      ),
+    );
+  }
+  Widget _buildDateListView() {
+    return SizedBox(
+      child: ListView.builder(
+        itemCount: _utilityBill?.datesAfterMMYY.length ?? 0,
+        shrinkWrap: true,
+        primary: false,
+        itemBuilder: (context, index) {
+          return ListTile(
+            title: Text(
+              _utilityBill?.datesAfterMMYY[index] ?? 'Not Available',
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w400),
+            ),
+          );
+        },
       ),
     );
   }
