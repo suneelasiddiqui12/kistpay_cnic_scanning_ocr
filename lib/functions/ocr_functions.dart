@@ -127,6 +127,7 @@ import 'package:image/image.dart' as img;
       String dueDate = _extractDueDate(lines);
       String paidDate = _extractPaidDateIfAvailable(text, lines);
       List<String> datesAfterMMYY = extractNextThreeDatesAfterMMYY(lines);
+      List<String> datesAfterPayDate = extractNextThreeDatesAfterPayDate(lines);
 
 
       print('Extracted name: $name');
@@ -137,14 +138,15 @@ import 'package:image/image.dart' as img;
       print('Extracted paidDate: $paidDate');
 
       return UtilityBillModel(
-        name: name,
-        address: address,
-        city: city,
-        amountPayable: amountPayable,
-        issueDate: issueDate,
-        dueDate: dueDate,
-        paidDate: paidDate,
-        datesAfterMMYY: datesAfterMMYY,
+          name: name,
+          address: address,
+          city: city,
+          amountPayable: amountPayable,
+          issueDate: issueDate,
+          dueDate: dueDate,
+          paidDate: paidDate,
+          datesAfterMMYY: datesAfterMMYY,
+          datesAfterPayDate: datesAfterPayDate
       );
 
     }
@@ -257,6 +259,28 @@ import 'package:image/image.dart' as img;
       print("Extracted Dates: $extractedDates");  // Final debug print
       return extractedDates;
     }
+
+    List<String> extractNextThreeDatesAfterPayDate(List<String> lines) {
+      List<String> extractedDates = [];
+      int payDateIndex = lines.indexWhere((line) => line.trim().contains('Pay-Date'));
+
+      print("Lines: $lines");
+      print("Pay-Date Index: $payDateIndex");
+
+      if (payDateIndex != -1) {
+        for (int i = payDateIndex + 1; i < lines.length && extractedDates.length < 3; i++) {
+          print("Checking line: ${lines[i]}");  // Debugging line check
+          if (RegExp(r'\d{2}-[A-Za-z]{3}-\d{2}').hasMatch(lines[i])) {
+            String date = RegExp(r'\d{2}-[A-Za-z]{3}-\d{2}').firstMatch(lines[i])!.group(0)!;
+            extractedDates.add(date);
+          }
+        }
+      }
+
+      print("Extracted Pay Dates: $extractedDates");  // Final debug print
+      return extractedDates;
+    }
+
 
 
   }

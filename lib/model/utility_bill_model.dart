@@ -8,6 +8,9 @@ class UtilityBillModel {
   final String paidDate;
   bool isVerified;
   final List<String> datesAfterMMYY;
+  final List<String> datesAfterPayDate;
+  final List<String> billedAmounts;
+  final List<String> payments;
 
   UtilityBillModel({
      this.name = '',
@@ -19,5 +22,8 @@ class UtilityBillModel {
      this.paidDate = '',
     this.isVerified = false,
     this.datesAfterMMYY = const [],
+    this.datesAfterPayDate = const [],
+    this.billedAmounts = const [],
+    this.payments = const [],
   });
 }
