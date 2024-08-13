@@ -81,6 +81,8 @@ class _UtilityBillScannerState extends State<UtilityBillScanner> {
     print("Is Verified: ${_utilityBill?.isVerified}");
     print("Extracted dates ${_utilityBill?.datesAfterMMYY}");
     print("Extracted pay dates ${_utilityBill?.datesAfterPayDate}");
+    print("Extracted payment ${_utilityBill?.payments}");
+    print("Extracted billed amount ${_utilityBill?.billedAmounts}");
 
     setState(() {}); // Ensure UI updates after parsing
   }
@@ -288,8 +290,6 @@ class _UtilityBillScannerState extends State<UtilityBillScanner> {
       ),
     );
   }
-
-
 
   Widget _buildImagePickerButtons() {
     return Center(

@@ -128,7 +128,11 @@ import 'package:image/image.dart' as img;
       String paidDate = _extractPaidDateIfAvailable(text, lines);
       List<String> datesAfterMMYY = extractNextThreeDatesAfterMMYY(lines);
       List<String> datesAfterPayDate = extractNextThreeDatesAfterPayDate(lines);
+      // Extract billed amounts after the "Billed Amount" keyword
+      List<String> billedAmounts = extractAmountsAfterKeyword(lines, 'Billed Amount');
 
+      // Extract payment amounts after the "Payment" keyword
+      List<String> paymentAmounts = extractAmountsAfterKeyword(lines, 'Payment');
 
       print('Extracted name: $name');
       print('Extracted address: $address');
@@ -146,7 +150,10 @@ import 'package:image/image.dart' as img;
           dueDate: dueDate,
           paidDate: paidDate,
           datesAfterMMYY: datesAfterMMYY,
-          datesAfterPayDate: datesAfterPayDate
+          datesAfterPayDate: datesAfterPayDate,
+          payments: paymentAmounts,
+          billedAmounts: billedAmounts,
+
       );
 
     }
@@ -238,7 +245,6 @@ import 'package:image/image.dart' as img;
       return recognizedText.text;
     }
 
-
     List<String> extractNextThreeDatesAfterMMYY(List<String> lines) {
       List<String> extractedDates = [];
       final mmYYIndex = lines.indexWhere((line) => line.trim().contains('MM') && line.contains('/YY'));
@@ -281,6 +287,64 @@ import 'package:image/image.dart' as img;
       return extractedDates;
     }
 
+    List<String> extractAmountsAfterKeyword(List<String> lines, String keyword) {
+      List<String> extractedAmounts = [];
+      bool keywordFound = false;
 
+      for (String line in lines) {
+        if (line.trim().contains(keyword)) {
+          keywordFound = true;
+          continue;
+        }
+        if (keywordFound) {
+          String cleanedLine = line.trim().replaceAll(RegExp(r'[^\d,.]'), '');
+
+          // Ensure this line contains a valid amount
+          if (RegExp(r'^\d{1,3}(,\d{3})*(\.\d{2})?$').hasMatch(cleanedLine)) {
+            extractedAmounts.add(cleanedLine);
+            if (extractedAmounts.length == 3) {
+              break;
+            }
+          }
+        }
+      }
+      return extractedAmounts;
+    }
+
+    // List<String> extractNextThreeAmountsAfterPayment(List<String> lines, int billedAmountIndex) {
+    //   List<String> extractedAmounts = [];
+    //   int paymentIndex = lines.indexWhere((line) => line.trim().contains('Payment'));
+    //
+    //   if (paymentIndex != -1 && paymentIndex > billedAmountIndex) { // Ensure payment comes after billed amount
+    //     for (int i = paymentIndex + 1; i < lines.length && extractedAmounts.length < 3; i++) {
+    //       String line = lines[i].trim();
+    //       String cleanedLine = line.replaceAll(RegExp(r'[^\d,.]'), '');
+    //
+    //       if (RegExp(r'^\d{1,3}(,\d{3})*(\.\d{2})?$').hasMatch(cleanedLine)) {
+    //         extractedAmounts.add(cleanedLine);
+    //       }
+    //     }
+    //   }
+    //
+    //   return extractedAmounts;
+    // }
+    //
+    // List<String> extractNextThreeAmountsAfterBilledAmount(List<String> lines) {
+    //   List<String> extractedAmounts = [];
+    //   int billedAmountIndex = lines.indexWhere((line) => line.trim().contains('Billed Amount'));
+    //
+    //   if (billedAmountIndex != -1) {
+    //     for (int i = billedAmountIndex + 1; i < lines.length && extractedAmounts.length < 3; i++) {
+    //       String line = lines[i].trim();
+    //       String cleanedLine = line.replaceAll(RegExp(r'[^\d,.]'), '');
+    //
+    //       if (RegExp(r'^\d{1,3}(,\d{3})*(\.\d{2})?$').hasMatch(cleanedLine)) {
+    //         extractedAmounts.add(cleanedLine);
+    //       }
+    //     }
+    //   }
+    //
+    //   return extractedAmounts;
+    // }
 
   }
