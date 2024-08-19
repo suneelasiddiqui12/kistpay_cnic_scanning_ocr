@@ -45,47 +45,54 @@ class _UtilityBillScannerState extends State<UtilityBillScanner> {
     final text = await _ocrFunctions.extractText(imageFile);
     print("OCR Text Output: $text");
 
+    String keyword = _detectKeyword(text);
+
+
     // Crop the image
     final croppedFile = await _ocrFunctions.cropBottomLeft(imageFile);
     final croppedText = await _ocrFunctions.extractCroppedText(croppedFile);
-
-    print("Cropped Text OCR: $croppedText");
 
     setState(() {
       _extractedText = text;
       _croppedText = croppedText;
       _croppedImage = XFile(croppedFile.path); // Update the cropped image state
-      _parseText(text);
+      _parseText(text, keyword);
       _isLoading = false;
     });
   }
 
-  void _parseText(String text) {
-    print("Parsing text...");
-    _utilityBill = _ocrFunctions.parseText(text);
+  String _detectKeyword(String text) {
+    if (text.contains('KE')) {
+      return 'KE';
+    } else if (text.contains('HESCO')) {
+      return 'HESCO';
+    } else {
+      return 'UNKNOWN';
+    }
+  }
+
+  void _parseText(String text, String keyword) {
+    if (keyword == 'KE') {
+      _utilityBill = _ocrFunctions.parseTextForKE(text);
+    } else if (keyword == 'HESCO') {
+      _utilityBill = _ocrFunctions.parseTextForHESCO(text);
+    } else {
+      // Handle unknown or unsupported keyword
+      _utilityBill = null;
+      setState(() {
+        _extractedText = 'Unsupported Utility Bill Format';
+      });
+      return;
+    }
 
     if (_utilityBill?.dueDate != null) {
       // Check if the bill is within 3 months old
       _utilityBill!.isVerified = _isBillVerified(_utilityBill!.dueDate);
     }
 
-    // Debug print to confirm parsing
-    print("Parsed Data:");
-    print("Name: ${_utilityBill?.name}");
-    print("Address: ${_utilityBill?.address}");
-    print("City: ${_utilityBill?.city}");
-    print("Amount Payable: ${_utilityBill?.amountPayable}");
-    print("Issue Date: ${_utilityBill?.issueDate}");
-    print("Due Date: ${_utilityBill?.dueDate}");
-    print("Paid Date: ${_utilityBill?.paidDate}");
-    print("Is Verified: ${_utilityBill?.isVerified}");
-    print("Extracted dates ${_utilityBill?.datesAfterMMYY}");
-    print("Extracted pay dates ${_utilityBill?.datesAfterPayDate}");
-    print("Extracted payment ${_utilityBill?.payments}");
-    print("Extracted billed amount ${_utilityBill?.billedAmounts}");
-
     setState(() {}); // Ensure UI updates after parsing
   }
+
   bool _isBillVerified(String dueDate) {
     try {
       final format = DateFormat('dd-MMM-yy'); // Assuming date format is 'dd-MMM-yy'
@@ -95,13 +102,12 @@ class _UtilityBillScannerState extends State<UtilityBillScanner> {
 
       return difference.inDays <= 90; // 90 days = 3 months
     } catch (e) {
-      print("Error parsing due date: $e");
       return false;
     }
   }
+
   @override
   Widget build(BuildContext context) {
-    print('Building UI with UtilityBill: ${_utilityBill?.name}');
 
     return Scaffold(
       appBar: AppBar(
@@ -357,6 +363,17 @@ class _UtilityBillScannerState extends State<UtilityBillScanner> {
           _buildExtractedDataRow('Paid Date: ', _utilityBill?.paidDate ?? 'Not Available'),
           const SizedBox(height: 10),
           _buildExtractedDataRow('Verification: ', _utilityBill?.isVerified == true ? 'Verified' : 'Not Verified'),
+          const SizedBox(height: 10,),
+          if (_utilityBill?.hasLatePayments == true) ...[
+            const Text(
+              "Late Payments Detected!",
+              style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold, fontSize: 18),
+            ),
+          ] else const Text(
+            "No Late Payments Detected",
+            style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold, fontSize: 18),
+          ),
+
         ],
       ),
     );

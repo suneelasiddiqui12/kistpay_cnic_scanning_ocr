@@ -11,6 +11,7 @@ class UtilityBillModel {
   final List<String> datesAfterPayDate;
   final List<String> billedAmounts;
   final List<String> payments;
+  final bool? hasLatePayments;
 
   UtilityBillModel({
      this.name = '',
@@ -25,5 +26,7 @@ class UtilityBillModel {
     this.datesAfterPayDate = const [],
     this.billedAmounts = const [],
     this.payments = const [],
+    this.hasLatePayments,
+
   });
 }

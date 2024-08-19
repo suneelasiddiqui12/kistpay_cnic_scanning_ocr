@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:app_detection/model/cnic_ocr_model.dart';
@@ -8,11 +9,8 @@ import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:image/image.dart' as img;
 
-
   class OcrFunctions {
-
     CnicOcrModel _cnicOcrModel = CnicOcrModel();
-
   bool isFrontScan = false;
   /// it will pick your image either form Gallery or from Camera
   final ImagePicker _picker = ImagePicker();
@@ -113,7 +111,7 @@ import 'package:image/image.dart' as img;
     return recognizedText.text;
   }
 
-    UtilityBillModel parseText(String text) {
+    UtilityBillModel parseTextForKE(String text) {
       List<String> lines = text.split('\n');
       String name = _extractName(lines);
       int addressStartIndex = lines.indexOf(name) + 1;
@@ -133,13 +131,7 @@ import 'package:image/image.dart' as img;
 
       // Extract payment amounts after the "Payment" keyword
       List<String> paymentAmounts = extractAmountsAfterKeyword(lines, 'Payment');
-
-      print('Extracted name: $name');
-      print('Extracted address: $address');
-      print('Extracted city: $city');
-      print('Extracted issueDate: $issueDate');
-      print('Extracted dueDate: $dueDate');
-      print('Extracted paidDate: $paidDate');
+      bool hasLatePayments = checkForLatePayments(billedAmounts, paymentAmounts);
 
       return UtilityBillModel(
           name: name,
@@ -153,11 +145,43 @@ import 'package:image/image.dart' as img;
           datesAfterPayDate: datesAfterPayDate,
           payments: paymentAmounts,
           billedAmounts: billedAmounts,
-
+        hasLatePayments: hasLatePayments,
       );
 
     }
 
+    UtilityBillModel parseTextForHESCO(String text) {
+      List<String> lines = text.split('\n');
+      String name = _extractNameAndAddress(lines);
+      int refNoIndex = lines.indexWhere((line) => line.contains('Reference No.'));
+      String city = 'Hyderabad'; // Example city, modify as needed
+      String amountPayable = _extractLineValue(lines, 'Current Amount');
+      String issueDate = _extractLineValue(lines, 'Bill Date');
+      String dueDate = _extractDueDate(lines);
+      String paidDate = _extractPaidDateIfAvailable(text, lines);
+      List<String> datesAfterMMYY = extractNextThreeDatesAfterMMYY(lines);
+      List<String> datesAfterPayDate = extractNextThreeDatesAfterPayDate(lines);
+      List<String> billedAmounts = extractAmountsAfterKeyword(lines, 'Current Charges');
+      List<String> paymentAmounts = extractAmountsAfterKeyword(lines, 'Paid Amount');
+      bool hasLatePayments = checkForLatePayments(billedAmounts, paymentAmounts);
+
+      return UtilityBillModel(
+        name: name,
+        city: city,
+        amountPayable: amountPayable,
+        issueDate: issueDate,
+        dueDate: dueDate,
+        paidDate: paidDate,
+        datesAfterMMYY: datesAfterMMYY,
+        datesAfterPayDate: datesAfterPayDate,
+        payments: paymentAmounts,
+        billedAmounts: billedAmounts,
+        hasLatePayments: hasLatePayments,
+      );
+    }
+
+
+//For KE
   String _extractName(List<String> lines) {
     return lines.firstWhere(
           (line) => line.trim().isNotEmpty && !RegExp(r'\d').hasMatch(line) && line.split(' ').length > 1,
@@ -214,7 +238,7 @@ import 'package:image/image.dart' as img;
     return '';
   }
 
-    Future<File> cropBottomLeft(File imageFile) async {
+  Future<File> cropBottomLeft(File imageFile) async {
       final bytes = await imageFile.readAsBytes();
       final originalImage = img.decodeImage(Uint8List.fromList(bytes));
 
@@ -249,20 +273,14 @@ import 'package:image/image.dart' as img;
       List<String> extractedDates = [];
       final mmYYIndex = lines.indexWhere((line) => line.trim().contains('MM') && line.contains('/YY'));
 
-      // Debugging: Print the lines and index
-      print("Lines: $lines");
-      print("MM/YY Index: $mmYYIndex");
-
       if (mmYYIndex != -1 && mmYYIndex + 3 < lines.length) {
         for (int i = 1; i <= 3; i++) {
-          print("Checking line: ${lines[mmYYIndex + i]}");  // Debugging line check
           if (RegExp(r'\d{2}/\d{2}').hasMatch(lines[mmYYIndex + i])) {
             extractedDates.add(lines[mmYYIndex + i].trim());
           }
         }
       }
 
-      print("Extracted Dates: $extractedDates");  // Final debug print
       return extractedDates;
     }
 
@@ -270,12 +288,8 @@ import 'package:image/image.dart' as img;
       List<String> extractedDates = [];
       int payDateIndex = lines.indexWhere((line) => line.trim().contains('Pay-Date'));
 
-      print("Lines: $lines");
-      print("Pay-Date Index: $payDateIndex");
-
       if (payDateIndex != -1) {
         for (int i = payDateIndex + 1; i < lines.length && extractedDates.length < 3; i++) {
-          print("Checking line: ${lines[i]}");  // Debugging line check
           if (RegExp(r'\d{2}-[A-Za-z]{3}-\d{2}').hasMatch(lines[i])) {
             String date = RegExp(r'\d{2}-[A-Za-z]{3}-\d{2}').firstMatch(lines[i])!.group(0)!;
             extractedDates.add(date);
@@ -283,7 +297,6 @@ import 'package:image/image.dart' as img;
         }
       }
 
-      print("Extracted Pay Dates: $extractedDates");  // Final debug print
       return extractedDates;
     }
 
@@ -309,6 +322,37 @@ import 'package:image/image.dart' as img;
         }
       }
       return extractedAmounts;
+    }
+
+    bool checkForLatePayments(List<String> billedAmounts, List<String> payments) {
+      if (billedAmounts.isEmpty || payments.isEmpty) return false;
+
+      for (int i = 0; i < min(billedAmounts.length, payments.length); i++) {
+        double billedAmount = double.parse(billedAmounts[i].replaceAll(',', ''));
+        double payment = double.parse(payments[i].replaceAll(',', ''));
+
+        if (payment > billedAmount * 1.05) {
+          return true;
+        }
+      }
+
+      return false;
+    }
+
+
+    // For Hyd
+    String _extractNameAndAddress(List<String> lines) {
+      int nameAddressIndex = lines.indexWhere((line) => line.contains('NAME & ADDRESS'));
+
+      if (nameAddressIndex != -1 && nameAddressIndex + 2 < lines.length) {
+        // Extract the first two lines after "NAME & ADDRESS"
+        String firstLine = lines[nameAddressIndex + 1].trim();
+        String secondLine = lines[nameAddressIndex + 2].trim();
+
+        return '$firstLine\n$secondLine';
+      }
+
+      return 'Name and Address Not Found';
     }
 
   }
