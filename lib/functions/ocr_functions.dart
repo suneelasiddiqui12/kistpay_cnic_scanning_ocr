@@ -311,40 +311,4 @@ import 'package:image/image.dart' as img;
       return extractedAmounts;
     }
 
-    // List<String> extractNextThreeAmountsAfterPayment(List<String> lines, int billedAmountIndex) {
-    //   List<String> extractedAmounts = [];
-    //   int paymentIndex = lines.indexWhere((line) => line.trim().contains('Payment'));
-    //
-    //   if (paymentIndex != -1 && paymentIndex > billedAmountIndex) { // Ensure payment comes after billed amount
-    //     for (int i = paymentIndex + 1; i < lines.length && extractedAmounts.length < 3; i++) {
-    //       String line = lines[i].trim();
-    //       String cleanedLine = line.replaceAll(RegExp(r'[^\d,.]'), '');
-    //
-    //       if (RegExp(r'^\d{1,3}(,\d{3})*(\.\d{2})?$').hasMatch(cleanedLine)) {
-    //         extractedAmounts.add(cleanedLine);
-    //       }
-    //     }
-    //   }
-    //
-    //   return extractedAmounts;
-    // }
-    //
-    // List<String> extractNextThreeAmountsAfterBilledAmount(List<String> lines) {
-    //   List<String> extractedAmounts = [];
-    //   int billedAmountIndex = lines.indexWhere((line) => line.trim().contains('Billed Amount'));
-    //
-    //   if (billedAmountIndex != -1) {
-    //     for (int i = billedAmountIndex + 1; i < lines.length && extractedAmounts.length < 3; i++) {
-    //       String line = lines[i].trim();
-    //       String cleanedLine = line.replaceAll(RegExp(r'[^\d,.]'), '');
-    //
-    //       if (RegExp(r'^\d{1,3}(,\d{3})*(\.\d{2})?$').hasMatch(cleanedLine)) {
-    //         extractedAmounts.add(cleanedLine);
-    //       }
-    //     }
-    //   }
-    //
-    //   return extractedAmounts;
-    // }
-
   }
