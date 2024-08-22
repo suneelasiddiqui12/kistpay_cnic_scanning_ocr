@@ -6,7 +6,12 @@ class UtilityBillModel {
   final String issueDate;
   final String dueDate;
   final String paidDate;
-  bool isVerified; // Add this field
+  bool isVerified;
+  final List<String> datesAfterMMYY;
+  final List<String> datesAfterPayDate;
+  final List<String> billedAmounts;
+  final List<String> payments;
+  final bool? hasLatePayments;
 
   UtilityBillModel({
      this.name = '',
@@ -17,5 +22,11 @@ class UtilityBillModel {
      this.dueDate = '',
      this.paidDate = '',
     this.isVerified = false,
+    this.datesAfterMMYY = const [],
+    this.datesAfterPayDate = const [],
+    this.billedAmounts = const [],
+    this.payments = const [],
+    this.hasLatePayments,
+
   });
 }

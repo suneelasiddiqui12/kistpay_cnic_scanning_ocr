@@ -45,44 +45,54 @@ class _UtilityBillScannerState extends State<UtilityBillScanner> {
     final text = await _ocrFunctions.extractText(imageFile);
     print("OCR Text Output: $text");
 
+    String keyword = _detectKeyword(text);
+
+
     // Crop the image
     final croppedFile = await _ocrFunctions.cropBottomLeft(imageFile);
     final croppedText = await _ocrFunctions.extractCroppedText(croppedFile);
-
-    print("Cropped Text OCR: $croppedText");
 
     setState(() {
       _extractedText = text;
       _croppedText = croppedText;
       _croppedImage = XFile(croppedFile.path); // Update the cropped image state
-      _parseText(text);
+      _parseText(text, keyword);
       _isLoading = false;
     });
   }
 
-  void _parseText(String text) {
-    print("Parsing text...");
-    _utilityBill = _ocrFunctions.parseText(text);
+  String _detectKeyword(String text) {
+    if (text.contains('KE')) {
+      return 'KE';
+    } else if (text.contains('HESCO')) {
+      return 'HESCO';
+    } else {
+      return 'UNKNOWN';
+    }
+  }
+
+  void _parseText(String text, String keyword) {
+    if (keyword == 'KE') {
+      _utilityBill = _ocrFunctions.parseTextForKE(text);
+    } else if (keyword == 'HESCO') {
+      _utilityBill = _ocrFunctions.parseTextForHESCO(text);
+    } else {
+      // Handle unknown or unsupported keyword
+      _utilityBill = null;
+      setState(() {
+        _extractedText = 'Unsupported Utility Bill Format';
+      });
+      return;
+    }
 
     if (_utilityBill?.dueDate != null) {
       // Check if the bill is within 3 months old
       _utilityBill!.isVerified = _isBillVerified(_utilityBill!.dueDate);
     }
 
-    // Debug print to confirm parsing
-    print("Parsed Data:");
-    print("Name: ${_utilityBill?.name}");
-    print("Address: ${_utilityBill?.address}");
-    print("City: ${_utilityBill?.city}");
-    print("Amount Payable: ${_utilityBill?.amountPayable}");
-    print("Issue Date: ${_utilityBill?.issueDate}");
-    print("Due Date: ${_utilityBill?.dueDate}");
-    print("Paid Date: ${_utilityBill?.paidDate}");
-    print("Is Verified: ${_utilityBill?.isVerified}");
-
-
     setState(() {}); // Ensure UI updates after parsing
   }
+
   bool _isBillVerified(String dueDate) {
     try {
       final format = DateFormat('dd-MMM-yy'); // Assuming date format is 'dd-MMM-yy'
@@ -92,13 +102,12 @@ class _UtilityBillScannerState extends State<UtilityBillScanner> {
 
       return difference.inDays <= 90; // 90 days = 3 months
     } catch (e) {
-      print("Error parsing due date: $e");
       return false;
     }
   }
+
   @override
   Widget build(BuildContext context) {
-    print('Building UI with UtilityBill: ${_utilityBill?.name}');
 
     return Scaffold(
       appBar: AppBar(
@@ -134,13 +143,156 @@ class _UtilityBillScannerState extends State<UtilityBillScanner> {
               const SizedBox(height: 20),
               if (_croppedImage != null && !_isLoading) ...[
                 const SizedBox(height: 20),
-                Image.file(File(_croppedImage!.path)),
-                const SizedBox(height: 10),
-                Text(_croppedText),
+                const Text(
+                  'Billing and Payment History',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.black87,
+                    decoration: TextDecoration.underline,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 26
+                  )
+                ),
+             //   Image.file(File(_croppedImage!.path)),
+                // Text(_croppedText),
+                const SizedBox(height: 20),
+                if (_utilityBill?.datesAfterMMYY.isNotEmpty == true)
+                  Column(
+                    children: [
+                      SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Table(
+                          border: TableBorder.all(color: Colors.black12),
+                          columnWidths: const {
+                            0: FixedColumnWidth(150),
+                            1: FixedColumnWidth(150),
+                            2: FixedColumnWidth(150),
+                            3: FixedColumnWidth(150),
+                          },
+                          children: [
+                            TableRow(
+                              children: [
+                                _buildHeaderCell('MM/YY'),
+                                _buildHeaderCell('Billed Amount'),
+                                _buildHeaderCell('Pay-Date'),
+                                _buildHeaderCell('Payment'),
+                              ],
+                            ),
+                            TableRow(
+                              children: [
+                                _buildDateListView(),
+                                _buildBilledAmountListView(),
+                                _buildPayDateListView(),
+                                _buildPaymentListView(),
+                              ],
+                            ),
+                          ],
+                        ),
+                      )
+                    ],
+                  )
               ],
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildHeaderCell(String text) {
+    return Container(
+      padding: const EdgeInsets.all(10),
+      color: Colors.blueGrey.withOpacity(0.3),
+      child: Text(
+        text,
+        textAlign: TextAlign.center,
+        style: const TextStyle(
+          color: Colors.black87,
+          fontWeight: FontWeight.w400,
+          fontSize: 22,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDateListView() {
+    return SizedBox(
+      height: 200, // Adjust height as needed
+      child: ListView.builder(
+        itemCount: _utilityBill?.datesAfterMMYY.length ?? 0,
+        shrinkWrap: true,
+        primary: false,
+        itemBuilder: (context, index) {
+          return ListTile(
+            title: Center(
+              child: Text(
+                _utilityBill?.datesAfterMMYY[index] ?? 'Not Available',
+                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w400),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildBilledAmountListView() {
+    // Implement this function to return the billed amounts
+    return SizedBox(
+      height: 200, // Adjust height as needed
+      child: ListView.builder(
+        itemCount: _utilityBill?.billedAmounts.length ?? 0,
+        shrinkWrap: true,
+        primary: false,
+        itemBuilder: (context, index) {
+          return ListTile(
+            title: Text(
+              _utilityBill?.billedAmounts[index] ?? 'Not Available',
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w400),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildPayDateListView() {
+    return SizedBox(
+      height: 200, // Adjust height as needed
+      child: ListView.builder(
+        itemCount: _utilityBill?.datesAfterPayDate.length ?? 0,
+        shrinkWrap: true,
+        primary: false,
+        itemBuilder: (context, index) {
+          return ListTile(
+            title: Center(
+              child: Text(
+                _utilityBill?.datesAfterPayDate[index] ?? 'Not Available',
+                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w400),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildPaymentListView() {
+    // Implement this function to return the payment data
+    return SizedBox(
+      height: 200, // Adjust height as needed
+      child: ListView.builder(
+        itemCount: _utilityBill?.payments.length ?? 0,
+        shrinkWrap: true,
+        primary: false,
+        itemBuilder: (context, index) {
+          return ListTile(
+            title: Text(
+              _utilityBill?.payments[index] ?? 'Not Available',
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w400),
+            ),
+          );
+        },
       ),
     );
   }
@@ -211,6 +363,17 @@ class _UtilityBillScannerState extends State<UtilityBillScanner> {
           _buildExtractedDataRow('Paid Date: ', _utilityBill?.paidDate ?? 'Not Available'),
           const SizedBox(height: 10),
           _buildExtractedDataRow('Verification: ', _utilityBill?.isVerified == true ? 'Verified' : 'Not Verified'),
+          const SizedBox(height: 10,),
+          if (_utilityBill?.hasLatePayments == true) ...[
+            const Text(
+              "Late Payments Detected!",
+              style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold, fontSize: 18),
+            ),
+          ] else const Text(
+            "No Late Payments Detected",
+            style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold, fontSize: 18),
+          ),
+
         ],
       ),
     );
