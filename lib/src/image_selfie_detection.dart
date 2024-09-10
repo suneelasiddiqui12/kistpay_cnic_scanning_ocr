@@ -16,7 +16,6 @@ class ImageSelfieDetection extends StatefulWidget {
 
 class _ImageSelfieDetectionState extends State<ImageSelfieDetection> {
   var faceSdk = FaceSDK.instance;
-
   var _status = "Face Match Verification";
   var _similarityStatus = " ";
   var _uiImage1 = Image.asset('assets/images/portrait.png');
@@ -79,7 +78,53 @@ class _ImageSelfieDetectionState extends State<ImageSelfieDetection> {
   setImageDialog(BuildContext context, int number) => showDialog(
     context: context,
     builder: (BuildContext context) => AlertDialog(
-      title: const Text("A recent selfie is needed"),
+      title: const Text(
+          "A recent selfie is needed",
+        style: TextStyle(
+          color: Colors.black87,
+          fontWeight: FontWeight.w600,
+          fontSize: 20,
+        ),
+      ),
+      content: const Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            'Guidelines for Taking a Proper Selfie',
+            style: TextStyle(
+              color: Colors.black87,
+              fontWeight: FontWeight.w500,
+              fontSize: 18,
+            ),
+          ),
+          SizedBox(height: 10),
+          Text(
+            '- Make sure your face is clearly visible.',
+            style: TextStyle(color: Colors.black87, fontSize: 16),
+          ),
+          Text(
+            '- Avoid wearing a cap or hat.',
+            style: TextStyle(color: Colors.black87, fontSize: 16),
+          ),
+          Text(
+            '- Do not wear sunglasses or eyeglasses.',
+            style: TextStyle(color: Colors.black87, fontSize: 16),
+          ),
+          Text(
+            '- Ensure the background is plain and well-lit.',
+            style: TextStyle(color: Colors.black87, fontSize: 16),
+          ),
+          Text(
+            '- Keep your face centered within the frame.',
+            style: TextStyle(color: Colors.black87, fontSize: 16),
+          ),
+          Text(
+            '- Hold your phone at eye level.',
+            style: TextStyle(color: Colors.black87, fontSize: 16),
+          ),
+        ],
+      ),
       actions: [useCamera(number)],
     ),
   );
@@ -191,7 +236,7 @@ class _ImageSelfieDetectionState extends State<ImageSelfieDetection> {
   Widget textButton(String text, VoidCallback onPressed) {
     return TextButton(
       onPressed: onPressed,
-      child: Text(text),
+      child: Text(text, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),),
     );
   }
 

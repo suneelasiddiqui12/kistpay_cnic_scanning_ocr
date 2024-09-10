@@ -142,23 +142,22 @@ class _UtilityBillScannerState extends State<UtilityBillScanner> {
                 _utilityBill == null ? const Text('No data') : _buildExtractedData(),
               const SizedBox(height: 20),
               if (_croppedImage != null && !_isLoading) ...[
-                const SizedBox(height: 20),
-                const Text(
-                  'Billing and Payment History',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: Colors.black87,
-                    decoration: TextDecoration.underline,
-                    fontWeight: FontWeight.w700,
-                    fontSize: 26
-                  )
-                ),
-             //   Image.file(File(_croppedImage!.path)),
+             //   Image.file(File(_croppedImage!.path)),1
                 // Text(_croppedText),
                 const SizedBox(height: 20),
                 if (_utilityBill?.datesAfterMMYY.isNotEmpty == true)
                   Column(
                     children: [
+                      const Text(
+                          'Billing and Payment History',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                              color: Colors.black87,
+                              decoration: TextDecoration.underline,
+                              fontWeight: FontWeight.w700,
+                              fontSize: 26
+                          )
+                      ),
                       SingleChildScrollView(
                         scrollDirection: Axis.horizontal,
                         child: Table(
