@@ -22,22 +22,24 @@ class _CnicFrontBackViewState extends State<CnicFrontBackView> {
             children: [
               Image.asset('assets/images/kistpay_logo.png'),
               const SizedBox(height: 80),
-              ElevatedButton.icon(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => CnicFrontView()),
-                  );
-                },
-                icon: Icon(Icons.arrow_forward_sharp),
-                label: Text('Start Verification', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w400)),
-                style: ElevatedButton.styleFrom(
-                  foregroundColor: Colors.black,
-                  backgroundColor: AppColors.chineseSilver.withOpacity(0.9),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(5.0),
+              Center(
+                child: ElevatedButton.icon(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => CnicFrontView()),
+                    );
+                  },
+                  icon: Icon(Icons.arrow_forward_sharp),
+                  label: Text('Start Verification', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w400)),
+                  style: ElevatedButton.styleFrom(
+                    foregroundColor: Colors.black,
+                    backgroundColor: AppColors.chineseSilver.withOpacity(0.9),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(5.0),
+                    ),
+                    padding: const EdgeInsets.fromLTRB(51, 14, 51, 14),
                   ),
-                  padding: const EdgeInsets.fromLTRB(51, 14, 51, 14),
                 ),
               ),
 
