@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_face_api/flutter_face_api.dart';
 import 'package:google_mlkit_document_scanner/google_mlkit_document_scanner.dart';
-import 'package:image_picker/image_picker.dart';
 
 class ImageSelfieDetection extends StatefulWidget {
   final FaceSDK faceSdk;

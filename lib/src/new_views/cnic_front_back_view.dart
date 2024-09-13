@@ -1,5 +1,5 @@
 import 'package:app_detection/constants/app_colors.dart';
-import 'package:app_detection/src/new_views/cnic_back_view.dart';
+import 'package:app_detection/model/cnic_ocr_model.dart';
 import 'package:app_detection/src/new_views/cnic_front_view.dart';
 import 'package:flutter/material.dart';
 
@@ -11,6 +11,7 @@ class CnicFrontBackView extends StatefulWidget {
 }
 
 class _CnicFrontBackViewState extends State<CnicFrontBackView> {
+  CnicOcrModel _cnicOcrModel = CnicOcrModel();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -27,7 +28,7 @@ class _CnicFrontBackViewState extends State<CnicFrontBackView> {
                   onPressed: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => const CnicFrontView()),
+                      MaterialPageRoute(builder: (context) => CnicFrontView(cnicOcrModel: _cnicOcrModel,)),
                     );
                   },
                   icon: const Icon(Icons.arrow_forward_sharp),

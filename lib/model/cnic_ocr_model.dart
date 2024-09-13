@@ -4,6 +4,8 @@ class CnicOcrModel {
   String cnicHolderName;
   String cnicExpiryDate;
   String cnicHolderDateOfBirth;
+  String imagePath;
+  String selfieImagePath;
 
   CnicOcrModel({
     this.cnicNumber = "",
@@ -11,6 +13,8 @@ class CnicOcrModel {
     this.cnicHolderName = "",
     this.cnicExpiryDate = "",
     this.cnicHolderDateOfBirth = "",
+    this.imagePath = "",
+    this.selfieImagePath = " "
   });
 
   @override
@@ -21,6 +25,8 @@ class CnicOcrModel {
     string += cnicIssueDate.isNotEmpty ? 'Cnic Issue Date = $cnicIssueDate\n' : '';
     string += cnicHolderName.isNotEmpty ? 'Cnic Holder Name = $cnicHolderName\n' : '';
     string += cnicHolderDateOfBirth.isNotEmpty ? 'Cnic Holder DoB = $cnicHolderDateOfBirth\n' : '';
+    string += imagePath.isNotEmpty ? 'Image Path = $imagePath\n' : '';
+    string += selfieImagePath.isNotEmpty ? 'Selfie Image Path = $selfieImagePath\n' : '';
     return string;
   }
 }
