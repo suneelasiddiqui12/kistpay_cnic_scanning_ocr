@@ -44,21 +44,25 @@ class _IncomeProofViewState extends State<IncomeProofView> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  _buildImagePickerButton(
-                    label: 'Upload',
-                    icon: Icons.camera_alt,
-                    onPressed: () {},
+                  Expanded(
+                    child: _buildImagePickerButton(
+                      label: 'Upload',
+                      icon: Icons.camera_alt,
+                      onPressed: () {},
+                    ),
                   ),
                   const SizedBox(width: 18,),
-                  _buildImagePickerButton(
-                    label: 'Continue',
-                    icon: Icons.double_arrow_outlined,
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => UtilityBillView()),
-                      );
-                    },
+                  Expanded(
+                    child: _buildImagePickerButton(
+                      label: 'Continue',
+                      icon: Icons.double_arrow_outlined,
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => UtilityBillView()),
+                        );
+                      },
+                    ),
                   ),
                 ],
               )
@@ -83,7 +87,7 @@ class _IncomeProofViewState extends State<IncomeProofView> {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(5.0),
         ),
-        padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 40.0),
+        padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 10.0),
       ),
     );
   }
