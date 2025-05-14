@@ -1,10 +1,12 @@
 import 'package:app_detection/constants/app_colors.dart';
+import 'package:app_detection/model/cnic_ocr_model.dart';
 import 'package:app_detection/src/new_views/income_proof_view.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class CaptureSelfie extends StatefulWidget {
-  const CaptureSelfie({super.key});
+  final CnicOcrModel cnicOcrModel;
+  const CaptureSelfie({super.key, required this.cnicOcrModel});
 
   @override
   State<CaptureSelfie> createState() => _CaptureSelfieState();
